@@ -106,14 +106,20 @@ void echo (char *tokens[MAX_ARGUMENTS + 2]) {
     const char *fileName = NULL;
 
     int toRead = 0;
+    int toAppend = 0;
 
     for (int i = 1; tokens[i] != NULL; ++i) {
         if (strcmp(tokens[i], ">") == 0) {
             fileName = tokens[i + 1];
             break;
+        } else if (strcmp(tokens[i], ">>") == 0) {
+            toAppend= 1;
+            fileName = tokens[i + 1];
+            break;
         } else if (strcmp(tokens[i], "<") == 0) {
             fileName = tokens[i + 1];
             toRead = 1;
+            break; // FIX THIS MESS
         } else {
             strcat(message, tokens[i]);
             strcat(message, " ");
@@ -125,7 +131,13 @@ void echo (char *tokens[MAX_ARGUMENTS + 2]) {
     if (fileName == NULL) {
         printf("%s\n", message);
     } else if (!toRead) {
-        FILE *file = fopen(fileName, "w");
+
+        FILE *file;
+        if (!toAppend) {
+            file = fopen(fileName, "w");
+        } else {
+            file = fopen(fileName, "a");
+        }
 
         if (file != NULL) {
             fprintf(file, "%s\n", message);
@@ -138,6 +150,9 @@ void echo (char *tokens[MAX_ARGUMENTS + 2]) {
         int c;
         FILE *file = fopen(fileName, "r");
         if (file) {
+            if (strcmp(message, "") != 0) {
+                printf("%s ", message);
+            }
             while ((c = fgetc(file)) != EOF) {
                 printf("%c", c);
             }
